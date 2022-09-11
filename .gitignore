@@ -1,2 +1,7 @@
 *~
 .*
+*.jpg
+*.csv
+*.pkl
+*.db
+*.xlsx
