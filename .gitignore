@@ -9,3 +9,4 @@
 *.pptx
 catboost_info
 MNIST
+*.pth
