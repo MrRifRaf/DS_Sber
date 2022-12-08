@@ -10,3 +10,4 @@
 catboost_info
 MNIST
 *.pth
+quora.txt
