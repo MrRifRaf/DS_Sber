@@ -1,3 +1,5 @@
+import os
+
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
@@ -11,8 +13,18 @@ from tacotron2_common.utils import load_wav_to_torch
 from waveglow.arg_parser import waveglow_parser
 from waveglow.data_function import MelAudioLoader
 
-data = LIBRISPEECH(r'C:\Users\gabdullin-rr\Tuition\Python\DS_Sber\Project\data',
+torch.__version__
+
+a = torch.rand(48, 279, 256)
+b = torch.rand(48, 279, 2)
+c = torch.cat([a, b], -1)
+c.shape
+
+
+data = LIBRISPEECH(r'.\Project\data',
                    url='train-clean-100', folder_in_archive='LibriSpeech', download=True)
+
+data[0]
 
 train_data = LIBRISPEECH(r'C:\Users\gabdullin-rr\Tuition\Python\DS_Sber\Project\data',
                          url='test-clean', folder_in_archive='LibriSpeech', download=True)
@@ -110,6 +122,11 @@ class Args:
     def __init__(self):
         pass
 
+
+path = os.path.join('c:\\', 'users', 'rafail gabdullin',
+                    'downloads', '103-1240-0001.mel')
+mel = torch.load(path)
+draw_mel(mel)
 
 args = Args()
 args = tacotron2_parser(args, None)

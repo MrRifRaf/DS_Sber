@@ -13,6 +13,8 @@ _pad = '_'
 # _punctuation = '!\'(),.:;? '
 _punctuation = '\' '
 _special = '-'
+_bos = '~'
+_eos = '@'
 # _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 _letters = 'abcdefghijklmnopqrstuvwxyz'
 
@@ -20,5 +22,6 @@ _letters = 'abcdefghijklmnopqrstuvwxyz'
 # _arpabet = ['@' + s for s in cmudict.valid_symbols]
 
 # Export all symbols:
-symbols = [_pad] + list(_special) + list(_punctuation) + \
-    list(_letters)  # + _arpabet
+symbols = [_pad] + list(_special) + list(_punctuation) + list(_letters) + [
+    _bos, _eos
+]

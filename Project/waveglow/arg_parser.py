@@ -31,11 +31,11 @@ def waveglow_parser(args, _):
     """
 
     # misc parameters
-    args.n_mel_channels = 80           # Number of bins in mel-spectrograms
+    args.n_mel_channels = 80  # Number of bins in mel-spectrograms
 
     # glow parameters
 
-    args.flows = 12                    # Number of steps of flow
+    args.flows = 12  # Number of steps of flow
 
     # Number of samples in a group processed by the steps of flow
     args.groups = 8
@@ -46,7 +46,7 @@ def waveglow_parser(args, _):
     args.early_every = 4
 
     args.early_size = 2  # Number of channels output to the loss function
-    args.sigma = 1.0     # Standard deviation used for sampling from Gaussian
+    args.sigma = 1.0  # Standard deviation used for sampling from Gaussian
 
     # Segment length (audio samples) processed per iteration
     args.segment_length = 4000
@@ -56,7 +56,7 @@ def waveglow_parser(args, _):
     # Kernel size for dialted convolution in the affine coupling layer (WN)
     args.wn_kernel_size = 3
 
-    args.wn_channels = 512 // 4       # Number of channels in WN
-    args.wn_layers = 8 // 2           # Number of layers in WN
+    args.wn_channels = 512 // 2  # Number of channels in WN
+    args.wn_layers = 8  # Number of layers in WN
 
     return args
