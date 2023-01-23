@@ -14,7 +14,11 @@ catboost_info
 MNIST
 *.pth
 *.pt
-quora.txt
+*.txt
+*.pdf
 *.log
 Project/data
 Project/output
+New_project/hi_fi_tts_v0
+New_project/tacotron2/mnt
+

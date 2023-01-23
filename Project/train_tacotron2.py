@@ -48,10 +48,16 @@ def parse_args(parser):
     Parse commandline arguments.
     """
     distributed = parser.add_argument_group('distributed setup')
-    distributed.add_argument('--rank', default=0, type=int,
-                             help='Rank of the process, do not set! Done by multiproc module')
-    distributed.add_argument('--world-size', default=1, type=int,
-                             help='Number of processes, do not set! Done by multiproc module')
+    distributed.add_argument(
+        '--rank',
+        default=0,
+        type=int,
+        help='Rank of the process, do not set! Done by multiproc module')
+    distributed.add_argument(
+        '--world-size',
+        default=1,
+        type=int,
+        help='Number of processes, do not set! Done by multiproc module')
 
     return parser
 
@@ -60,43 +66,43 @@ def add_args(args):
     """ Train hyperparameters.
     """
 
-    args.output = r'.\output'           # Directory to save checkpoints
-    args.dataset_path = r'.\data'       # Path to dataset
-    args.model_name = 'Tacotron2'       # Model to train
-    args.log_file = 'train.log'         # Filename for logging
-    args.epochs = 1501                  # Number of total epochs to run
-    args.gpu_run = torch.cuda.is_available()   # Run on CPU or GPU
+    args.output = 'output'  # Directory to save checkpoints
+    args.dataset_path = 'data'  # Path to dataset
+    args.model_name = 'Tacotron2'  # Model to train
+    args.log_file = 'train.log'  # Filename for logging
+    args.epochs = 1501  # Number of total epochs to run
+    args.gpu_run = torch.cuda.is_available()  # Run on CPU or GPU
 
     # Epochs after which decrease learning rate
     args.anneal_steps = [10, 15]
 
-    args.anneal_factor = 0.1           # Factor for annealing learning rate
+    args.anneal_factor = 0.1  # Factor for annealing learning rate
 
-    args.seed = None                   # Seed for random number generators
+    args.seed = None  # Seed for random number generators
 
     # training
-    args.epochs_per_checkpoint = 5     # Number of epochs per checkpoint
-    args.checkpoint_path = ''          # Checkpoint path to resume training
+    args.epochs_per_checkpoint = 5  # Number of epochs per checkpoint
+    args.checkpoint_path = ''  # Checkpoint path to resume training
 
     # Resumes training from the last checkpoint;
     # uses the directory provided with \'--output\' option
     # to search for the checkpoint \"checkpoint_<model_name>_last.pt\"')
     args.resume_from_last = True
 
-    args.dynamic_loss_scaling = True    # Enable dynamic loss scaling
-    args.amp = True                     # Enable AMP
-    args.cudnn_enabled = True           # Enable cudnn
-    args.cudnn_benchmark = True         # Run cudnn benchmark
+    args.dynamic_loss_scaling = True  # Enable dynamic loss scaling
+    args.amp = True  # Enable AMP
+    args.cudnn_enabled = True  # Enable cudnn
+    args.cudnn_benchmark = True  # Run cudnn benchmark
 
     # disable uniform initialization of batchnorm layer weight
     args.disable_uniform_initialize_bn_weight = True
 
     # Optimization parameters
     args.use_saved_learning_rate = False
-    args.learning_rate = 0.001         # Learing rate
-    args.weight_decay = 1e-6           # Weight decay
-    args.grad_clip_thresh = 1.0        # Clip threshold for gradients
-    args.batch_size = 3                # Batch size per GPU
+    args.learning_rate = 0.001  # Learing rate
+    args.weight_decay = 1e-6  # Weight decay
+    args.grad_clip_thresh = 1.0  # Clip threshold for gradients
+    args.batch_size = 3  # Batch size per GPU
 
     # Size of dataset to use for train/test
     # args.subset_size = args.batch_size * 80
@@ -123,18 +129,18 @@ def add_args(args):
 
     # audio parameters
 
-    args.sampling_rate = 16000         # Sampling rate
-    args.filter_length = 1024          # Filter length
-    args.hop_length = 256              # Hop (stride) length
-    args.win_length = 1024             # Window length
-    args.mel_fmin = 0.0                # Minimum mel frequency
-    args.mel_fmax = 8000.0             # Maximum mel frequency
+    args.sampling_rate = 16000  # Sampling rate
+    args.filter_length = 1024  # Filter length
+    args.hop_length = 256  # Hop (stride) length
+    args.win_length = 1024  # Window length
+    args.mel_fmin = 0.0  # Minimum mel frequency
+    args.mel_fmax = 8000.0  # Maximum mel frequency
 
     # Url used to set up distributed training
     args.dist_url = 'tcp://localhost:23456'
 
-    args.group_name = 'group_name'     # Distributed group name
-    args.dist_backend = 'gloo'         # Distributed run backend
+    args.group_name = 'group_name'  # Distributed group name
+    args.dist_backend = 'gloo'  # Distributed run backend
 
     args.bench_class = ''
 
@@ -159,9 +165,11 @@ def init_distributed(args, world_size, rank, group_name):
     torch.cuda.set_device(rank % torch.cuda.device_count())
 
     # Initialize distributed communication
-    dist.init_process_group(
-        backend=args.dist_backend, init_method=args.dist_url,
-        world_size=world_size, rank=rank, group_name=group_name)
+    dist.init_process_group(backend=args.dist_backend,
+                            init_method=args.dist_url,
+                            world_size=world_size,
+                            rank=rank,
+                            group_name=group_name)
 
     print("Done initializing distributed")
 
@@ -172,10 +180,12 @@ def save_checkpoint(model, optimizer, scaler, epoch, config, output_dir,
     random_rng_state = torch.random.get_rng_state().cuda()
     cuda_rng_state = torch.cuda.get_rng_state(local_rank).cuda()
 
-    random_rng_states_all = [torch.empty_like(
-        random_rng_state) for _ in range(world_size)]
-    cuda_rng_states_all = [torch.empty_like(
-        cuda_rng_state) for _ in range(world_size)]
+    random_rng_states_all = [
+        torch.empty_like(random_rng_state) for _ in range(world_size)
+    ]
+    cuda_rng_states_all = [
+        torch.empty_like(cuda_rng_state) for _ in range(world_size)
+    ]
 
     if world_size > 1:
         dist.all_gather(random_rng_states_all, random_rng_state)
@@ -188,22 +198,25 @@ def save_checkpoint(model, optimizer, scaler, epoch, config, output_dir,
     cuda_rng_states_all = torch.stack(cuda_rng_states_all).cpu()
 
     if local_rank == 0:
-        checkpoint = {'epoch': epoch,
-                      'cuda_rng_state_all': cuda_rng_states_all,
-                      'random_rng_states_all': random_rng_states_all,
-                      'config': config,
-                      'state_dict': model.state_dict(),
-                      'optimizer': optimizer.state_dict(),
-                      'scaler': scaler.state_dict()}
+        checkpoint = {
+            'epoch': epoch,
+            'cuda_rng_state_all': cuda_rng_states_all,
+            'random_rng_states_all': random_rng_states_all,
+            'config': config,
+            'state_dict': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'scaler': scaler.state_dict()
+        }
 
         checkpoint_filename = f"checkpoint_{model_name}_{epoch}.pt"
         checkpoint_path = os.path.join(output_dir, checkpoint_filename)
         print(
-            f"Saving model and optimizer state at epoch {epoch} to {checkpoint_path}")
+            f"Saving model and optimizer state at epoch {epoch} to {checkpoint_path}"
+        )
         torch.save(checkpoint, checkpoint_path)
 
-        symlink_dst = os.path.join(
-            output_dir, f"checkpoint_{model_name}_last.pt")
+        symlink_dst = os.path.join(output_dir,
+                                   f"checkpoint_{model_name}_last.pt")
         torch.save(checkpoint, symlink_dst)
 
 
@@ -231,7 +244,8 @@ def load_checkpoint(model, optimizer, scaler, epoch, filepath, local_rank):
         torch.random.set_rng_state(checkpoint['random_rng_state'])
     else:
         raise Exception(
-            "Model checkpoint must have either 'random_rng_state' or 'random_rng_states_all' key.")
+            "Model checkpoint must have either 'random_rng_state' or 'random_rng_states_all' key."
+        )
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     scaler.load_state_dict(checkpoint['scaler'])
@@ -240,6 +254,7 @@ def load_checkpoint(model, optimizer, scaler, epoch, filepath, local_rank):
 
 # adapted from: https://discuss.pytorch.org/t/opinion-eval-should-be-a-context-manager/18998/3
 # Following snippet is licensed under MIT license
+
 
 @contextmanager
 def evaluating(model):
@@ -254,15 +269,18 @@ def evaluating(model):
 
 
 def validate(model, criterion, valset, epoch, batch_iter, batch_size,
-             world_size, collate_fn, distributed_run, perf_bench,
-             batch_to_gpu, amp_run, args, logger):
+             world_size, collate_fn, distributed_run, perf_bench, batch_to_gpu,
+             amp_run, args, logger):
     """Handles all the validation scoring and printing
     """
     with evaluating(model), torch.no_grad():
         val_sampler = DistributedSampler(valset) if distributed_run else None
-        val_loader = DataLoader(valset, num_workers=1, shuffle=False,
+        val_loader = DataLoader(valset,
+                                num_workers=1,
+                                shuffle=False,
                                 sampler=val_sampler,
-                                batch_size=batch_size, pin_memory=False,
+                                batch_size=batch_size,
+                                pin_memory=False,
                                 collate_fn=collate_fn,
                                 drop_last=(True if perf_bench else False))
 
@@ -292,18 +310,20 @@ def validate(model, criterion, valset, epoch, batch_iter, batch_size,
             iter_stop_time = time.perf_counter()
             iter_time = iter_stop_time - iter_start_time
 
-            items_per_sec = reduced_num_items/iter_time
-            logger.debug(dict(step=(epoch, batch_iter, i), data={
-                         'val_items_per_sec': items_per_sec}))
+            items_per_sec = reduced_num_items / iter_time
+            logger.debug(
+                dict(step=(epoch, batch_iter, i),
+                     data={'val_items_per_sec': items_per_sec}))
             val_items_per_sec += items_per_sec
             num_iters += 1
 
         val_loss = val_loss / num_iters
         val_items_per_sec = val_items_per_sec / num_iters
 
-        logger.debug(dict(step=(epoch,), data={'val_loss': val_loss}))
-        logger.debug(dict(step=(epoch,), data={
-                     'val_items_per_sec': val_items_per_sec}))
+        logger.debug(dict(step=(epoch, ), data={'val_loss': val_loss}))
+        logger.debug(
+            dict(step=(epoch, ), data={'val_items_per_sec':
+                                       val_items_per_sec}))
 
         return val_loss, val_items_per_sec
 
@@ -317,19 +337,24 @@ def adjust_learning_rate(iteration, epoch, optimizer, learning_rate,
                 p += 1
 
     if anneal_factor == 0.3:
-        lr = learning_rate * ((0.1 ** (p // 2)) * (1.0 if p % 2 == 0 else 0.3))
+        lr = learning_rate * ((0.1**(p // 2)) * (1.0 if p % 2 == 0 else 0.3))
     else:
-        lr = learning_rate * (anneal_factor ** p)
+        lr = learning_rate * (anneal_factor**p)
 
     if optimizer.param_groups[0]['lr'] != lr:
-        logger.debug(dict(step=(epoch, iteration), data={'learning_rate changed': str(
-            optimizer.param_groups[0]['lr'])+" -> "+str(lr)}))
+        logger.debug(
+            dict(step=(epoch, iteration),
+                 data={
+                     'learning_rate changed':
+                     str(optimizer.param_groups[0]['lr']) + " -> " + str(lr)
+                 }))
 
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
 
 class Args:
+
     def __init__(self):
         pass
 
@@ -360,7 +385,8 @@ def main():
     logger.setLevel(logging.NOTSET)
 
     file_handler = logging.FileHandler(
-        rf'{args.output}\{args.model_name}_{local_rank}_{args.log_file}', mode='w')
+        rf'{args.output}\{args.model_name}_{local_rank}_{args.log_file}',
+        mode='w')
     file_handler.setLevel(logging.DEBUG)
     file_handler_format = '%(asctime)s | %(levelname)s | %(lineno)d: %(message)s'
     file_handler.setFormatter(logging.Formatter(file_handler_format))
@@ -389,14 +415,17 @@ def main():
     run_start_time = time.perf_counter()
 
     model_config = models.get_model_config(model_name, args)
-    model = models.get_model(model_name, model_config,
+    model = models.get_model(model_name,
+                             model_config,
                              cpu_run=not args.gpu_run,
-                             uniform_initialize_bn_weight=not args.disable_uniform_initialize_bn_weight)
+                             uniform_initialize_bn_weight=not args.
+                             disable_uniform_initialize_bn_weight)
 
     if distributed_run:
         model = DDP(model, device_ids=[local_rank], output_device=local_rank)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate,
+    optimizer = torch.optim.Adam(model.parameters(),
+                                 lr=args.learning_rate,
                                  weight_decay=args.weight_decay)
 
     scaler = torch.cuda.amp.GradScaler(enabled=args.amp)
@@ -425,10 +454,10 @@ def main():
     except AttributeError:
         n_frames_per_step = None
 
-    collate_fn = data_functions.get_collate_function(
-        model_name, n_frames_per_step)
-    trainset = data_functions.get_data_loader(
-        model_name, args.dataset_path, args.training_files, args)
+    collate_fn = data_functions.get_collate_function(model_name,
+                                                     n_frames_per_step)
+    trainset = data_functions.get_data_loader(model_name, args.dataset_path,
+                                              args.training_files, args)
     if distributed_run:
         train_sampler = DistributedSampler(trainset, seed=(args.seed or 0))
         shuffle = False
@@ -436,13 +465,17 @@ def main():
         train_sampler = None
         shuffle = True
 
-    train_loader = DataLoader(trainset, num_workers=1, shuffle=shuffle,
+    train_loader = DataLoader(trainset,
+                              num_workers=1,
+                              shuffle=shuffle,
                               sampler=train_sampler,
-                              batch_size=args.batch_size, pin_memory=False,
-                              drop_last=True, collate_fn=collate_fn)
+                              batch_size=args.batch_size,
+                              pin_memory=False,
+                              drop_last=True,
+                              collate_fn=collate_fn)
 
-    valset = data_functions.get_data_loader(
-        model_name, args.dataset_path, args.validation_files, args)
+    valset = data_functions.get_data_loader(model_name, args.dataset_path,
+                                            args.validation_files, args)
 
     batch_to_gpu = data_functions.get_batch_to_gpu(model_name)
 
@@ -472,10 +505,15 @@ def main():
             if args.gpu_run:
                 torch.cuda.synchronize()
             iter_start_time = time.perf_counter()
-            logger.info(dict(step=(epoch, i), data={
-                        'glob_iter/iters_per_epoch': f'{iteration}/{len(train_loader)}'}))
-            adjust_learning_rate(iteration, epoch, optimizer, args.learning_rate,
-                                 args.anneal_steps, args.anneal_factor, local_rank, logger)
+            logger.info(
+                dict(step=(epoch, i),
+                     data={
+                         'glob_iter/iters_per_epoch':
+                         f'{iteration}/{len(train_loader)}'
+                     }))
+            adjust_learning_rate(iteration, epoch, optimizer,
+                                 args.learning_rate, args.anneal_steps,
+                                 args.anneal_factor, local_rank, logger)
 
             model.zero_grad()
             x, y, num_items = batch_to_gpu(batch)
@@ -494,8 +532,8 @@ def main():
             if np.isnan(reduced_loss):
                 raise Exception("loss is NaN")
 
-            logger.info(dict(step=(epoch, i), data={
-                        'train_loss': reduced_loss}))
+            logger.info(
+                dict(step=(epoch, i), data={'train_loss': reduced_loss}))
 
             num_iters += 1
 
@@ -505,14 +543,14 @@ def main():
             if args.amp:
                 scaler.scale(loss).backward()
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), args.grad_clip_thresh)
+                torch.nn.utils.clip_grad_norm_(model.parameters(),
+                                               args.grad_clip_thresh)
                 scaler.step(optimizer)
                 scaler.update()
             else:
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), args.grad_clip_thresh)
+                torch.nn.utils.clip_grad_norm_(model.parameters(),
+                                               args.grad_clip_thresh)
                 optimizer.step()
 
             model.zero_grad(set_to_none=True)
@@ -521,13 +559,14 @@ def main():
                 torch.cuda.synchronize()
             iter_stop_time = time.perf_counter()
             iter_time = iter_stop_time - iter_start_time
-            items_per_sec = reduced_num_items/iter_time
+            items_per_sec = reduced_num_items / iter_time
             train_epoch_items_per_sec += items_per_sec
 
-            logger.info(dict(step=(epoch, i), data={
-                             'train_items_per_sec': items_per_sec}))
-            logger.info(dict(step=(epoch, i), data={
-                        'train_iter_time': iter_time}))
+            logger.info(
+                dict(step=(epoch, i),
+                     data={'train_items_per_sec': items_per_sec}))
+            logger.info(
+                dict(step=(epoch, i), data={'train_iter_time': iter_time}))
             iteration += 1
 
         if args.gpu_run:
@@ -535,23 +574,28 @@ def main():
         epoch_stop_time = time.perf_counter()
         epoch_time = epoch_stop_time - epoch_start_time
 
-        logger.info(dict(step=(epoch,), data={'train_items_per_sec':
-                         (train_epoch_items_per_sec/num_iters if num_iters > 0 else 0.0)}))
-        logger.info(dict(step=(epoch,), data={'train_loss': reduced_loss}))
-        logger.info(dict(step=(epoch,), data={'train_epoch_time': epoch_time}))
+        logger.info(
+            dict(step=(epoch, ),
+                 data={
+                     'train_items_per_sec':
+                     (train_epoch_items_per_sec /
+                      num_iters if num_iters > 0 else 0.0)
+                 }))
+        logger.info(dict(step=(epoch, ), data={'train_loss': reduced_loss}))
+        logger.info(dict(step=(epoch, ), data={'train_epoch_time':
+                                               epoch_time}))
 
-        val_loss, val_items_per_sec = validate(model, criterion, valset, epoch,
-                                               iteration, args.batch_size,
-                                               world_size, collate_fn,
-                                               distributed_run,
-                                               args.bench_class == "perf-train",
-                                               batch_to_gpu,
-                                               args.amp, args, logger)
+        val_loss, val_items_per_sec = validate(
+            model, criterion, valset, epoch, iteration, args.batch_size,
+            world_size, collate_fn, distributed_run,
+            args.bench_class == "perf-train", batch_to_gpu, args.amp, args,
+            logger)
 
-        if ((epoch % args.epochs_per_checkpoint == 0) and
-                (args.bench_class == "" or args.bench_class == "train")):
+        if ((epoch % args.epochs_per_checkpoint == 0)
+                and (args.bench_class == "" or args.bench_class == "train")):
             save_checkpoint(model, optimizer, scaler, epoch, model_config,
-                            args.output, args.model_name, local_rank, world_size)
+                            args.output, args.model_name, local_rank,
+                            world_size)
         if local_rank == 0:
             file_handler.flush()
 
@@ -562,10 +606,14 @@ def main():
     logger.info(dict(step=tuple(), data={'run_time': run_time}))
     logger.info(dict(step=tuple(), data={'val_loss': val_loss}))
     logger.info(dict(step=tuple(), data={'train_loss': reduced_loss}))
-    logger.info(dict(step=tuple(), data={'train_items_per_sec':
-                     (train_epoch_items_per_sec/num_iters if num_iters > 0 else 0.0)}))
-    logger.info(dict(step=tuple(), data={
-                'val_items_per_sec': val_items_per_sec}))
+    logger.info(
+        dict(step=tuple(),
+             data={
+                 'train_items_per_sec': (train_epoch_items_per_sec /
+                                         num_iters if num_iters > 0 else 0.0)
+             }))
+    logger.info(
+        dict(step=tuple(), data={'val_items_per_sec': val_items_per_sec}))
 
     if local_rank == 0:
         file_handler.flush()
